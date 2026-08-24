@@ -1,0 +1,11 @@
+# The provided sample documents are the client's material and never enter git.
+samples/provided/
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.env

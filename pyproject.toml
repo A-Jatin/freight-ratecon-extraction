@@ -1,0 +1,65 @@
+[project]
+name = "ratecon"
+version = "0.1.0"
+description = "Schema-enforced LLM extraction of freight rate confirmations, with per-field confidence and human-review routing"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Jatin Ahuja" }]
+dependencies = [
+    "pydantic>=2.13",
+    "openai>=3.3,<4",
+    "pdfplumber>=0.11.10",
+]
+
+[project.scripts]
+ratecon = "ratecon.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "mypy>=2.3",
+    "ruff>=0.16",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "SIM",      # simplify
+    "C4",       # comprehensions
+    "RET",      # returns
+    "PTH",      # use pathlib
+    "RUF",      # ruff-specific
+    "ANN",      # annotations
+]
+ignore = ["E501"]  # the formatter owns line length
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "pdfplumber.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
