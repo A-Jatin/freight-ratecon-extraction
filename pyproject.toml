@@ -12,6 +12,9 @@ dependencies = [
     "pdfplumber>=0.11.10",
 ]
 
+[project.urls]
+Repository = "https://github.com/A-Jatin/freight-ratecon-extraction"
+
 [project.scripts]
 ratecon = "ratecon.cli:main"
 
