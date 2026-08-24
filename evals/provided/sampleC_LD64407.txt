@@ -1,0 +1,98 @@
+                                  CARRIER RATE & LOAD CONFIRMATION
+
+                                                                    DETAIL                     VALUE
+
+                                                                    Dispatcher                 Test User Ultraship
+
+                                                                    Phone                      +111111111111
+
+                                                                    Email                      testuser@ultraship.ai
+
+                                                                    Reference ID               LD64407
+
+9456 Laguna Springs Drive, Elk Grove, CA, USA, Elk Grove            Booked On                  28-Jul-2026
+California 95758-7987                                               Rate Con Date              28-Jul-2026
+Mailing Address: 9456 Laguna Springs Drive, Elk Grove, CA, USA
+                                                                    Pickup Date                31-Jul-2026
+Phone: 12312312333
+Fax: +12345678901
+After hour Contact: test@gmail.com
+
+
+Carrier Details
+
+
+ CARRIER                        MC #            PHONE              EQUIPMENT         AGREED AMOUNT (USD)               SIZE (IN FEET)
+
+ 10314803 CANADA INC            MC1146347       (905) 670-6882     Flatbed           $50.00 USD                        10
+
+
+Stops
+
+
+  #           Stops                         Date/Time                   Commodity
+
+
+  1           Pickup                        Appt Type                   S.         Commodity                 Weight          Quantity
+                                            appointment                 No
+              test automation pickup
+              Illinois State Police, 100    Shipping Date & Time
+              W Randolph St, Chicago,       07/31/2026                  1          Ceramics                  422             10
+              IL 60601, USA
+                                            Appointment Time
+              PO/Container No                                           Description
+                                            -
+              363028                                                    Automation pickup description
+              Load Type
+              FTL
+
+
+  2           Drop                          Appt Type                   S.         Commodity                 Weight          Quantity
+                                            fcfs                        No
+              test automation drop
+              New York University           Delivery Date & Time
+              Jeffrey S. Gould              08/02/2026                  1          Ceramics                  422             10
+              Welcome Center, 50 W
+              4th Street, New York, NY      Appointment Time
+              10012, USA                                                Description
+                                            -
+                                                                        This is automation drop location
+              PO/Container No
+              816843
+              Load Type
+              FTL
+
+
+Rate Breakdown
+
+
+  Base Carrier Rate                                                                                                         50.00 USD
+
+  Total                                                                                                                     50.00 USD
+
+
+Shipper Instructions (Sample)
+
+Please check in with the shipping office upon arrival. Freight must be loaded according to the scheduled appointment
+time. Contact the shipper immediately if any delays are expected.
+Carrier Instructions (Sample)
+
+Driver must call dispatch after pickup and provide status updates every morning. Submit signed POD within 24 hours of
+delivery to avoid payment delays
+
+Driver Details
+
+
+ DRIVER NAME                        CELL NO                          TRUCK NO                TRAILER NO
+
+ Playwright Driver                  (415) 555-5072                   68972                   24912
+
+
+Accepted by                            Date                                     Signature
+
+
+
+
+Powered by UltraShip TMS
+                                                                                                                Page 2 / 2
+

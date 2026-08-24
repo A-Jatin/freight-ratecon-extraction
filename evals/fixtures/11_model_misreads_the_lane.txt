@@ -1,0 +1,42 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-885177
+Rate Con Date       12-Mar-2026
+Pickup Date         13-Apr-2026
+
+Carrier Details
+CARRIER                  MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+HARLAN TRANSPORT CO      MC0771203   Dry Van     $2,780.00 USD   53
+
+Stops
+1  Pickup
+   Sunbelt Beverage Bottling
+   2400 Peachtree Industrial Blvd, Atlanta,
+   GA 30341, USA
+   Load Type        FTL
+   Shipping Date & Time   04/13/2026
+   S.No  Commodity        Weight    Quantity
+   1     Bottled Tea      41000     22
+
+2  Pickup
+   Carolina Glassworks
+   615 Textile Rd, Greenville,
+   SC 29607, USA
+   Load Type        FTL
+   Shipping Date & Time   04/14/2026
+   S.No  Commodity        Weight    Quantity
+   1     Bottled Tea      41000     22
+
+3  Drop
+   Chesapeake Grocery DC
+   9100 Pulaski Hwy, Baltimore,
+   MD 21237, USA
+   Load Type        FTL
+   Delivery Date & Time   04/16/2026
+   S.No  Commodity        Weight    Quantity
+   1     Bottled Tea      41000     22
+
+Rate Breakdown
+Line Haul              2780.00 USD
+Total                  2780.00 USD

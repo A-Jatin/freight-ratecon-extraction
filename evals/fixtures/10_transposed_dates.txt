@@ -1,0 +1,33 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-885044
+Rate Con Date       12-Mar-2026
+Pickup Date         30-Mar-2026
+
+Carrier Details
+CARRIER                  MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+HARLAN TRANSPORT CO      MC0771203   Dry Van     $1,325.00 USD   53
+
+Stops
+1  Pickup
+   Buckeye Packaging
+   880 Innovation Way, Dayton,
+   OH 45402, USA
+   Load Type        FTL
+   Shipping Date & Time   03/30/2026
+   S.No  Commodity        Weight    Quantity
+   1     Corrugate        22000     30
+
+2  Drop
+   Bluegrass Distribution
+   1440 Newtown Pike, Lexington,
+   KY 40511, USA
+   Load Type        FTL
+   Delivery Date & Time   03/28/2026
+   S.No  Commodity        Weight    Quantity
+   1     Corrugate        22000     30
+
+Rate Breakdown
+Line Haul              1325.00 USD
+Total                  1325.00 USD

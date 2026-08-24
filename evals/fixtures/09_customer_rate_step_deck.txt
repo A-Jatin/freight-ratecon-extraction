@@ -1,0 +1,37 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-884902
+Rate Con Date       12-Mar-2026
+Pickup Date         29-Mar-2026
+
+Carrier Details
+CARRIER                     MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+SUMMIT DECK CARRIERS INC    MC0655481   Step Deck   $2,150.00 USD   53
+
+Stops
+1  Pickup
+   Allegheny Machine Works
+   1900 Tech Center Dr, Pittsburgh,
+   PA 15219, USA
+   Load Type        FTL
+   Shipping Date & Time   03/29/2026
+   S.No  Commodity        Weight    Quantity
+   1     CNC Lathe        38000     1
+
+2  Drop
+   Great Plains Tooling
+   6600 Stockyards Blvd, Omaha,
+   NE 68107, USA
+   Load Type        FTL
+   Delivery Date & Time   03/31/2026
+   S.No  Commodity        Weight    Quantity
+   1     CNC Lathe        38000     1
+
+Rate Breakdown
+Line Haul              2150.00 USD
+Customer Rate          2600.00 USD
+Total                  2150.00 USD
+
+Carrier Instructions (Sample)
+Load secured with chains. Tarps not required.

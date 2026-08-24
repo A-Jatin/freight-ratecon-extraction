@@ -1,0 +1,115 @@
+                                  CARRIER RATE & LOAD CONFIRMATION
+
+                                                                    DETAIL                     VALUE
+
+                                                                    Dispatcher                 Test User Ultraship
+
+                                                                    Phone                      +111111111111
+
+                                                                    Email                      testuser@ultraship.ai
+
+                                                                    Reference ID               LD64408
+
+9456 Laguna Springs Drive, Elk Grove, CA, USA, Elk Grove            Booked On                  28-Jul-2026
+California 95758-7987                                               Rate Con Date              28-Jul-2026
+Mailing Address: 9456 Laguna Springs Drive, Elk Grove, CA, USA
+                                                                    Pickup Date                03-Aug-2026
+Phone: 12312312333
+Fax: +12345678901
+After hour Contact: test@gmail.com
+
+
+Carrier Details
+
+
+ CARRIER                        MC #            PHONE              EQUIPMENT          AGREED AMOUNT (USD)              SIZE (IN FEET)
+
+ 10314803 CANADA INC            MC1146347       (905) 670-6882     Flatbed            $700.00 USD                      53
+
+
+Stops
+
+
+  #           Stops                         Date/Time                   Commodity
+
+
+  1           Pickup                        Appt Type                   S.         Commodity                 Weight          Quantity
+                                            appointment                 No
+              test-r
+              Miami International           Shipping Date & Time
+              Airport (MIA), Northwest      07/28/2026                  1          Ceramics                  -               g
+              42nd Avenue, Miami, FL,
+              USA                           Appointment Time
+                                                                        Description
+              PO/Container No               -
+                                                                        -
+              -
+              Load Type
+              FTL
+
+
+  2           Pickup                        Appt Type                   S.         Commodity                 Weight          Quantity
+                                            appointment                 No
+              test automation pickup
+              Illinois State Police, 100    Shipping Date & Time
+              W Randolph St, Chicago,       08/03/2026                  1          Commodity_t               -               55
+              IL 60601, USA
+                                            Appointment Time
+              PO/Container No                                           Description
+                                            -
+              -                                                         -
+              Load Type
+              FTL
+
+
+  3           Drop                          Appt Type                   S.         Commodity                 Weight          Quantity
+                                            appointment                 No
+              test122
+              Hertz Car Rental - San        Delivery Date & Time
+              Jose - San Jose Mineta        08/05/2026                  1          Commodity_t               -               55
+              International Airport
+              (SJC), Airport Boulevard,     Appointment Time
+              San Jose, CA, USA                                         2          Ceramics                  -               g
+                                            -
+              PO/Container No
+                                                                        Description
+              -
+                                                                        -
+              Load Type
+              FTL
+
+
+Rate Breakdown
+  Base Carrier Rate                                                                                        500.00 USD
+
+  Carrier Charge                                                                                           200.00 USD
+
+  Total                                                                                                    700.00 USD
+
+
+Shipper Instructions (Sample)
+
+Please check in with the shipping office upon arrival. Freight must be loaded according to the scheduled appointment
+time. Contact the shipper immediately if any delays are expected.
+
+Carrier Instructions (Sample)
+
+Driver must call dispatch after pickup and provide status updates every morning. Submit signed POD within 24 hours of
+delivery to avoid payment delays
+
+Driver Details
+
+
+ DRIVER NAME                       CELL NO                          TRUCK NO                 TRAILER NO
+
+ John Driver                       (415) 555-2671                   12345                    67890
+
+
+Accepted by                                  Date                               Signature
+
+
+
+
+Powered by UltraShip TMS
+                                                                                                                 Page 2 / 2
+

@@ -1,0 +1,35 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-884815
+Rate Con Date       12-Mar-2026
+Pickup Date         27-Mar-2026
+
+Carrier Details
+CARRIER                  MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+HARLAN TRANSPORT CO      MC0771203   Dry Van     -               53
+
+Stops
+1  Pickup
+   Cornbelt Grain Co-op
+   4100 N Industrial Ave, Davenport,
+   IA 52806, USA
+   Load Type        FTL
+   Shipping Date & Time   03/27/2026
+   S.No  Commodity        Weight    Quantity
+   1     Bagged Feed      52000     26
+
+2  Drop
+   Tri-County Feed & Supply
+   225 Depot St, Sioux Falls,
+   SD 57104, USA
+   Load Type        FTL
+   Delivery Date & Time   TBD - dispatch will advise
+   S.No  Commodity        Weight    Quantity
+   1     Bagged Feed      52000     26
+
+Rate Breakdown
+Line Haul              2050.00 USD
+
+Carrier Instructions (Sample)
+Rate pending final approval. Do not dispatch until confirmed in writing.
