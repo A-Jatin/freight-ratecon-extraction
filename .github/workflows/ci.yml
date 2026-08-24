@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       # setup-uv provisions the interpreter itself, so no setup-python step.
-      - uses: astral-sh/setup-uv@v10
+      # Pinned to an exact release: this action publishes no floating major tag,
+      # so `@v10` does not resolve.
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
