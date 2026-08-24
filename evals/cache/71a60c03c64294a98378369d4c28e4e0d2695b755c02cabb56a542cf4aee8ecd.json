@@ -1,0 +1,11 @@
+{
+  "content": "{\"document_type\":\"rate_confirmation\",\"load_id_text\":\"ML-884815\",\"equipment_text\":\"Dry Van\",\"rate_con_date_text\":\"12-Mar-2026\",\"header_pickup_date_text\":\"27-Mar-2026\",\"stated_total_text\":null,\"stops\":[{\"sequence\":1,\"kind\":\"pickup\",\"address_text\":\"4100 N Industrial Ave, Davenport, IA 52806, USA\",\"city_text\":\"Davenport\",\"state_text\":\"IA\",\"zip_text\":\"52806\",\"date_text\":\"03/27/2026\"},{\"sequence\":2,\"kind\":\"delivery\",\"address_text\":\"225 Depot St, Sioux Falls, SD 57104, USA\",\"city_text\":\"Sioux Falls\",\"state_text\":\"SD\",\"zip_text\":\"57104\",\"date_text\":\"TBD - dispatch will advise\"}],\"charges\":[{\"label_text\":\"Line Haul\",\"amount_text\":\"2050.00 USD\"}],\"commodities\":[{\"description_text\":\"Bagged Feed\",\"weight_text\":\"52000\"},{\"description_text\":\"Bagged Feed\",\"weight_text\":\"52000\"}]}",
+  "finish_reason": "tool_calls",
+  "meta": {
+    "recorded": "provider",
+    "cache": "miss",
+    "model": "openai/gpt-5.6-luna",
+    "input_tokens": 1023,
+    "output_tokens": 228
+  }
+}

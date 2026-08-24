@@ -1,8 +1,0 @@
-{
-  "content": "{\"document_type\": \"rate_confirmation\", \"load_id_text\": \"ML-884501\", \"commodity_text\": \"Paper Goods\", \"weight_text\": \"24000\", \"equipment_text\": \"Dry Van\", \"rate_con_date_text\": \"3/2/26\", \"header_pickup_date_text\": null, \"stated_total_text\": \"1480.00 USD\", \"stops\": [{\"sequence\": 1, \"kind\": \"pickup\", \"address_text\": \"Keystone Warehouse 700 Enterprise Dr, Allentown, PA 18109, USA\", \"city_text\": \"Allentown\", \"state_text\": \"PA\", \"zip_text\": \"18109\", \"date_text\": \"3/4/26\"}, {\"sequence\": 2, \"kind\": \"delivery\", \"address_text\": \"Tri-State Supply 145 Bergen Ave, Newark, NJ 07103, USA\", \"city_text\": \"Newark\", \"state_text\": \"NJ\", \"zip_text\": \"07103\", \"date_text\": \"3/5/26\"}], \"charges\": [{\"label_text\": \"Line Haul\", \"amount_text\": \"1480.00 USD\"}, {\"label_text\": \"Total\", \"amount_text\": \"1480.00 USD\"}]}",
-  "finish_reason": "tool_calls",
-  "meta": {
-    "recorded": "authored",
-    "model": "openai/gpt-5-nano"
-  }
-}

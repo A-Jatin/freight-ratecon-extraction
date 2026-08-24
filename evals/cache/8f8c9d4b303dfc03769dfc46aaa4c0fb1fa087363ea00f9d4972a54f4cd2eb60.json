@@ -1,8 +1,0 @@
-{
-  "content": "{\"document_type\": \"bol\", \"load_id_text\": \"BOL-7741209\", \"commodity_text\": \"Canned Goods, foodstuffs NOI\", \"weight_text\": \"38400\", \"equipment_text\": null, \"rate_con_date_text\": null, \"header_pickup_date_text\": null, \"stated_total_text\": null, \"stops\": [{\"sequence\": 1, \"kind\": \"pickup\", \"address_text\": \"Great Lakes Distribution 4400 W 130th St, Cleveland, OH 44135, USA\", \"city_text\": \"Cleveland\", \"state_text\": \"OH\", \"zip_text\": \"44135\", \"date_text\": \"03/16/2026\"}, {\"sequence\": 2, \"kind\": \"delivery\", \"address_text\": \"Piedmont Grocery DC 2100 Westinghouse Blvd, Charlotte, NC 28273, USA\", \"city_text\": \"Charlotte\", \"state_text\": \"NC\", \"zip_text\": \"28273\", \"date_text\": null}], \"charges\": []}",
-  "finish_reason": "tool_calls",
-  "meta": {
-    "recorded": "authored",
-    "model": "openai/gpt-5-nano"
-  }
-}

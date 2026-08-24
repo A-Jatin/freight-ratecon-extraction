@@ -1,0 +1,11 @@
+{
+  "content": "{\"document_type\":\"rate_confirmation\",\"load_id_text\":\"ML-884455\",\"equipment_text\":\"Temp Control 34F\",\"rate_con_date_text\":\"12-Mar-2026\",\"header_pickup_date_text\":\"19-Mar-2026\",\"stated_total_text\":\"2875.00 USD\",\"stops\":[{\"sequence\":1,\"kind\":\"pickup\",\"address_text\":\"901 Airport Blvd, Salinas, CA 93901, USA\",\"city_text\":\"Salinas\",\"state_text\":\"CA\",\"zip_text\":\"93901\",\"date_text\":\"03/19/2026\"},{\"sequence\":2,\"kind\":\"delivery\",\"address_text\":\"5600 Washington St, Denver, CO 80216, USA\",\"city_text\":\"Denver\",\"state_text\":\"CO\",\"zip_text\":\"80216\",\"date_text\":\"03/21/2026\"}],\"charges\":[{\"label_text\":\"Line Haul\",\"amount_text\":\"2875.00 USD\"},{\"label_text\":\"Total\",\"amount_text\":\"2875.00 USD\"}],\"commodities\":[{\"description_text\":\"Lettuce\",\"weight_text\":\"41200 lbs\"},{\"description_text\":\"Lettuce\",\"weight_text\":\"41200 lbs\"}]}",
+  "finish_reason": "tool_calls",
+  "meta": {
+    "recorded": "provider",
+    "cache": "miss",
+    "model": "openai/gpt-5.6-luna",
+    "input_tokens": 1055,
+    "output_tokens": 248
+  }
+}

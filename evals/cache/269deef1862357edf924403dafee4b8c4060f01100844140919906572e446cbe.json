@@ -1,0 +1,8 @@
+{
+  "content": "{\"document_type\": \"rate_confirmation\", \"load_id_text\": \"ML-000000\", \"equipment_text\": \"Dry Van\", \"rate_con_date_text\": \"12-Mar-2026\", \"header_pickup_date_text\": \"13-Apr-2026\", \"stated_total_text\": \"2780.00 USD\", \"stops\": [{\"sequence\": 2, \"kind\": \"pickup\", \"address_text\": \"Carolina Glassworks 615 Textile Rd, Greenville, SC 29607, USA\", \"city_text\": \"Greenville\", \"state_text\": \"SC\", \"zip_text\": \"29607\", \"date_text\": \"04/14/2026\"}, {\"sequence\": 3, \"kind\": \"delivery\", \"address_text\": \"Chesapeake Grocery DC 9100 Pulaski Hwy, Baltimore, MD 21237, USA\", \"city_text\": \"Baltimore\", \"state_text\": \"MD\", \"zip_text\": \"21237\", \"date_text\": \"04/16/2026\"}], \"charges\": [{\"label_text\": \"Line Haul\", \"amount_text\": \"2780.00 USD\"}, {\"label_text\": \"Total\", \"amount_text\": \"2780.00 USD\"}], \"commodities\": [{\"description_text\": \"Bottled Tea\", \"weight_text\": \"41000\"}]}",
+  "finish_reason": "tool_calls",
+  "meta": {
+    "recorded": "authored",
+    "model": "openai/gpt-5.6-luna"
+  }
+}

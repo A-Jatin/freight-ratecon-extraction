@@ -1,8 +1,0 @@
-{
-  "content": "{\"document_type\": \"rate_confirmation\", \"load_id_text\": \"ML-884612\", \"commodity_text\": \"Rolled Paper\", \"weight_text\": \"43000\", \"equipment_text\": \"Dry Van\", \"rate_con_date_text\": \"12-Mar-2026\", \"header_pickup_date_text\": \"23-Mar-2026\", \"stated_total_text\": \"1900.00 USD\", \"stops\": [{\"sequence\": 1, \"kind\": \"pickup\", \"address_text\": \"Midwest Paper Mill 2200 River Rd, Green Bay, WI 54303, USA\", \"city_text\": \"Green Bay\", \"state_text\": \"WI\", \"zip_text\": \"54303\", \"date_text\": \"03/23/2026\"}, {\"sequence\": 2, \"kind\": \"delivery\", \"address_text\": \"Prairie Print Works 880 Stockyards Expy, Kansas City, KS 66105, USA\", \"city_text\": \"Kansas City\", \"state_text\": \"KS\", \"zip_text\": \"66105\", \"date_text\": \"03/25/2026\"}], \"charges\": [{\"label_text\": \"Line Haul\", \"amount_text\": \"1500.00 USD\"}, {\"label_text\": \"Fuel Surcharge\", \"amount_text\": \"300.00 USD\"}, {\"label_text\": \"Total\", \"amount_text\": \"1900.00 USD\"}]}",
-  "finish_reason": "tool_calls",
-  "meta": {
-    "recorded": "authored",
-    "model": "openai/gpt-5-nano"
-  }
-}
