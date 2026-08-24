@@ -78,13 +78,18 @@ def route(findings: list[Finding]) -> tuple[Confidence, dict[str, FieldStatus]]:
     non-gating field still costs a tier rather than vanishing — otherwise a
     record with a blocked load_id and a blocked commodity could still be
     published as fully trustworthy.
+
+    Every published field starts at `"ok"` rather than being absent. An empty
+    `field_status` cannot distinguish "we checked and it is fine" from "no rule
+    ever looked at this", and those are different facts to a consumer deciding
+    what to put in front of a human.
     """
-    status: dict[str, FieldStatus] = {}
+    status: dict[str, FieldStatus] = dict.fromkeys(rules.PUBLISHED_FIELDS, "ok")
     worst_gating = None
     worst_other = None
 
     for f in findings:
-        targets = f.fields or tuple(GATING_FIELDS)  # record-scoped hits everything
+        targets = f.fields or rules.GATING_ORDER  # record-scoped hits every gating field
         for name in targets:
             if f.severity is Severity.BLOCK:
                 status[name] = "blocked"
@@ -117,11 +122,18 @@ def _worse(current: Severity | None, candidate: Severity) -> Severity:
 
 def assemble(llm: LlmExtraction, source_text: str) -> Assembled:
     source_norm = normalize.norm_text(source_text)
-    stops = normalize.select_stops(llm.stops, source_text)
+    stops = normalize.select_stops(llm.stops)
     stated_total = normalize.parse_money(llm.stated_total_text)
     charges = normalize.summarise_charges(llm.charges, stated_total)
     equipment, confident = normalize.classify_equipment(llm.equipment_text)
-    weight, unit_stated = normalize.parse_weight_lbs(llm.weight_text)
+
+    # The first printed commodity row is the published one. `multi_commodity`
+    # flags the collapse; nothing here sums weights across rows, because the
+    # same line repeats under each stop on these documents.
+    first = llm.commodities[0] if llm.commodities else None
+    commodity_text = first.description_text if first else None
+    weight_text = first.weight_text if first else None
+    weight, unit_stated = normalize.parse_weight_lbs(weight_text)
 
     # The pickup date comes from the stop we selected as the origin, never from
     # the header. Reading it from the header on a multi-pickup load publishes an
@@ -142,15 +154,27 @@ def assemble(llm: LlmExtraction, source_text: str) -> Assembled:
         delivery=delivery,
         equipment=equipment,
         equipment_confident=confident,
+        commodity_text=commodity_text,
+        weight_text=weight_text,
         weight_lbs=weight,
         weight_unit_stated=unit_stated,
     )
 
 
 def _address(stop: Stop | None) -> Address | None:
-    if stop is None or not stop.city_text or not stop.state_text:
+    """A whitespace-only city or state is missing, not present.
+
+    Every part is stripped, not just city and state: an un-stripped `zip` puts
+    leading whitespace into a field a downstream system will match on.
+    """
+    if stop is None or not (stop.city_text or "").strip() or not (stop.state_text or "").strip():
         return None
-    return Address(city=stop.city_text.strip(), state=stop.state_text.strip(), zip=stop.zip_text)
+    zip_text = (stop.zip_text or "").strip()
+    return Address(
+        city=(stop.city_text or "").strip(),
+        state=(stop.state_text or "").strip(),
+        zip=zip_text or None,
+    )
 
 
 def _iso(d: date | None) -> str | None:
@@ -159,7 +183,7 @@ def _iso(d: date | None) -> str | None:
 
 def publish(a: Assembled, confidence: Confidence) -> RateConfirmation:
     return RateConfirmation(
-        load_id=a.llm.load_id_text,
+        load_id=_clean_str(a.llm.load_id_text),
         origin=_address(a.stops.origin),
         destination=_address(a.stops.destination),
         pickup_date=_iso(a.pickup.value),
@@ -172,9 +196,19 @@ def publish(a: Assembled, confidence: Confidence) -> RateConfirmation:
         fuel_surcharge=a.charges.fuel,
         total_rate=a.stated_total,
         weight_lbs=a.weight_lbs,
-        commodity=a.llm.commodity_text,
+        commodity=_clean_str(a.commodity_text),
         confidence=confidence,
     )
+
+
+def _clean_str(s: str | None) -> str | None:
+    """Strip, and treat whitespace-only as absent — the same rule `_address`
+    applies, applied to every published string rather than only to two of them.
+    """
+    if s is None:
+        return None
+    stripped = s.strip()
+    return stripped or None
 
 
 def _empty(confidence: Confidence = Confidence.LOW) -> RateConfirmation:
@@ -202,6 +236,13 @@ def _empty(confidence: Confidence = Confidence.LOW) -> RateConfirmation:
 def extract(text: str, client: LLMClient) -> ExtractionResult:
     """Total with respect to `Exception`. `KeyboardInterrupt` and `SystemExit`
     propagate, because swallowing those is worse than dying.
+
+    The deterministic half runs *inside* the try, which is the whole point. It
+    used to sit outside — on the reasoning that normalisation is pure Python and
+    therefore safe — and that reasoning was wrong: every input to it is model
+    output, and `Decimal.quantize` on a hallucinated digit run raised straight
+    through the guarantee. A boundary that only holds for the code you happened
+    to think about is not a boundary.
     """
     meta: dict[str, Any] = {
         "prompt_version": PROMPT_VERSION,
@@ -210,39 +251,43 @@ def extract(text: str, client: LLMClient) -> ExtractionResult:
         "document_sha256": hashlib.sha256(text.encode()).hexdigest()[:16],
     }
     if not text.strip():
-        return ExtractionResult(
-            _empty(), {}, [], Confidence.LOW, "failed", {**meta, "reason": "empty_input"}
-        )
+        return _failed(meta, "empty_input")
     try:
         completion: RawCompletion = client.complete(text)
         meta.update(completion.meta)
         llm, repairs = parse_and_repair(completion, client, text)
         meta["repairs"] = repairs
     except ExtractionError as e:
-        return ExtractionResult(
-            _empty(), {}, [], Confidence.LOW, "failed", {**meta, "reason": e.reason}
-        )
+        return _failed(meta, e.reason)
     except Exception as e:
-        return ExtractionResult(
-            _empty(),
-            {},
-            [],
-            Confidence.LOW,
-            "failed",
-            {
-                **meta,
-                "reason": "unexpected_error",
-                "error_type": type(e).__name__,
-                "traceback_digest": hashlib.sha256(traceback.format_exc().encode()).hexdigest()[
-                    :12
-                ],
-            },
-        )
+        return _failed(meta, "unexpected_error", e)
 
-    a = assemble(llm, text)
-    findings = rules.audit(a)
-    confidence, field_status = route(findings)
-    return ExtractionResult(publish(a, confidence), field_status, findings, confidence, "ok", meta)
+    try:
+        a = assemble(llm, text)
+        findings = rules.audit(a)
+        confidence, field_status = route(findings)
+        data = publish(a, confidence)
+    except Exception as e:
+        # Distinct from `unexpected_error` above: that reason means the provider
+        # call failed, this one means our own reading of a valid payload did.
+        # Collapsing them would make a normaliser bug indistinguishable from an
+        # outage on the dashboard, which is the same mistake as collapsing
+        # `status` into `confidence`.
+        return _failed(meta, "assembly_error", e)
+
+    return ExtractionResult(data, field_status, findings, confidence, "ok", meta)
+
+
+def _failed(meta: dict[str, Any], reason: str, error: Exception | None = None) -> ExtractionResult:
+    detail: dict[str, Any] = {**meta, "reason": reason}
+    if error is not None:
+        detail["error_type"] = type(error).__name__
+        # A digest rather than the traceback: enough to group identical crashes
+        # in the logs without putting document text into them.
+        detail["traceback_digest"] = hashlib.sha256(traceback.format_exc().encode()).hexdigest()[
+            :12
+        ]
+    return ExtractionResult(_empty(), {}, [], Confidence.LOW, "failed", detail)
 
 
 def extract_file(path: Path, client: LLMClient) -> ExtractionResult:
