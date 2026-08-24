@@ -1,0 +1,63 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+1420 Commerce Parkway, Suite 300, Columbus, OH 43215
+Phone: (614) 555-0142
+
+DETAIL              VALUE
+Dispatcher          Dana Whitfield
+Reference ID        ML-884390
+Booked On           12-Mar-2026
+Rate Con Date       12-Mar-2026
+Pickup Date         20-Mar-2026
+
+Carrier Details
+CARRIER                    MC #        PHONE           EQUIPMENT   AGREED AMOUNT   SIZE
+BLUE RIDGE HAULING INC     MC0884517   (704) 555-0119  Flatbed     $3,900.00 USD   48
+
+Stops
+#  Stops                          Date/Time                Commodity
+1  Pickup
+   Gulf Steel Supply
+   8800 Clinton Dr, Houston,
+   TX, USA
+   PO/Container No  -
+   Load Type        FTL
+   Appt Type        appointment
+   Shipping Date & Time   03/17/2026
+
+   S.No  Commodity        Weight    Quantity
+   1     Steel Coil       21000     3
+
+2  Pickup
+   Ozark Fabrication
+   1250 S Industrial Dr, Springfield,
+   MO 65802, USA
+   PO/Container No  -
+   Load Type        FTL
+   Appt Type        appointment
+   Shipping Date & Time   03/20/2026
+
+   S.No  Commodity        Weight    Quantity
+   1     Steel Plate      18000     6
+
+3  Drop
+   Cascade Structural Yard
+   4700 E Marginal Way S, Seattle,
+   WA, USA
+   PO/Container No  -
+   Load Type        FTL
+   Appt Type        fcfs
+   Delivery Date & Time   03/25/2026
+
+   S.No  Commodity        Weight    Quantity
+   1     Steel Coil       21000     3
+   2     Steel Plate      18000     6
+
+Rate Breakdown
+Base Carrier Rate      3400.00 USD
+Carrier Charge          500.00 USD
+Total                  3900.00 USD
+
+Carrier Instructions (Sample)
+Tarps required. Driver must call dispatch after each pickup.

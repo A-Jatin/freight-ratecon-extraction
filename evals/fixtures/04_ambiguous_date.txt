@@ -1,0 +1,32 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-884501
+Rate Con Date       3/2/26
+
+Carrier Details
+CARRIER                  MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+HARLAN TRANSPORT CO      MC0771203   Dry Van     $1,480.00 USD   53
+
+Stops
+1  Pickup
+   Keystone Warehouse
+   700 Enterprise Dr, Allentown,
+   PA 18109, USA
+   Load Type        FTL
+   Shipping Date & Time   3/4/26
+   S.No  Commodity        Weight    Quantity
+   1     Paper Goods      24000     18
+
+2  Drop
+   Tri-State Supply
+   145 Bergen Ave, Newark,
+   NJ 07103, USA
+   Load Type        FTL
+   Delivery Date & Time   3/5/26
+   S.No  Commodity        Weight    Quantity
+   1     Paper Goods      24000     18
+
+Rate Breakdown
+Line Haul              1480.00 USD
+Total                  1480.00 USD

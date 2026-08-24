@@ -1,0 +1,28 @@
+STRAIGHT BILL OF LADING - SHORT FORM
+ORIGINAL - NOT NEGOTIABLE
+
+BOL Number      BOL-7741209
+Ship Date       03/16/2026
+SCAC            BRHI
+
+Shipper
+Great Lakes Distribution
+4400 W 130th St, Cleveland, OH 44135, USA
+
+Consignee
+Piedmont Grocery DC
+2100 Westinghouse Blvd, Charlotte, NC 28273, USA
+
+Carrier
+BLUE RIDGE HAULING INC     MC0884517
+
+HANDLING UNITS   PACKAGE   WEIGHT   H.M.   COMMODITY DESCRIPTION            NMFC     CLASS
+22 PLT           22        38400          Canned Goods, foodstuffs NOI     50180    70
+
+Seal Number     SL-993871
+Trailer Number  BRH-4471
+
+NOTE: Liability limitation for loss or damage in this shipment may be applicable.
+See 49 U.S.C. 14706(c)(1)(A) and (B).
+
+Shipper Signature ______________   Driver Signature ______________

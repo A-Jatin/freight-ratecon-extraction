@@ -1,0 +1,56 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+1420 Commerce Parkway, Suite 300, Columbus, OH 43215
+Phone: (614) 555-0142     Fax: (614) 555-0143
+After hour Contact: dispatch@meridianlogistics.example
+
+DETAIL              VALUE
+Dispatcher          Dana Whitfield
+Phone               (614) 555-0187
+Email               dwhitfield@meridianlogistics.example
+Reference ID        ML-884213
+Booked On           12-Mar-2026
+Rate Con Date       12-Mar-2026
+Pickup Date         16-Mar-2026
+
+Carrier Details
+CARRIER                    MC #        PHONE           EQUIPMENT   AGREED AMOUNT   SIZE
+BLUE RIDGE HAULING INC     MC0884517   (704) 555-0119  Dry Van     $2,150.00 USD   53
+
+Stops
+#  Stops                          Date/Time                Commodity
+1  Pickup
+   Great Lakes Distribution
+   4400 W 130th St, Cleveland,
+   OH 44135, USA
+   PO/Container No  PO-551204
+   Load Type        FTL
+   Appt Type        appointment
+   Shipping Date & Time   03/16/2026
+   Appointment Time       0800
+
+   S.No  Commodity          Weight    Quantity
+   1     Canned Goods       38400     22
+
+2  Drop
+   Piedmont Grocery DC
+   2100 Westinghouse Blvd,
+   Charlotte, NC 28273, USA
+   PO/Container No  PO-551204
+   Load Type        FTL
+   Appt Type        appointment
+   Delivery Date & Time   03/18/2026
+   Appointment Time       0600
+
+   S.No  Commodity          Weight    Quantity
+   1     Canned Goods       38400     22
+
+Rate Breakdown
+Base Carrier Rate      2150.00 USD
+Total                  2150.00 USD
+
+Carrier Instructions (Sample)
+Driver must call dispatch after pickup and provide status updates every morning.
+Submit signed POD within 24 hours of delivery to avoid payment delays.
+Do not break seal. Check in at the guard shack.

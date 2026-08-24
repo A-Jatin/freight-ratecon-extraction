@@ -1,0 +1,34 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-884612
+Rate Con Date       12-Mar-2026
+Pickup Date         23-Mar-2026
+
+Carrier Details
+CARRIER                  MC #        EQUIPMENT   AGREED AMOUNT   SIZE
+HARLAN TRANSPORT CO      MC0771203   Dry Van     $1,900.00 USD   53
+
+Stops
+1  Pickup
+   Midwest Paper Mill
+   2200 River Rd, Green Bay,
+   WI 54303, USA
+   Load Type        FTL
+   Shipping Date & Time   03/23/2026
+   S.No  Commodity        Weight    Quantity
+   1     Rolled Paper     43000     14
+
+2  Drop
+   Prairie Print Works
+   880 Stockyards Expy, Kansas City,
+   KS 66105, USA
+   Load Type        FTL
+   Delivery Date & Time   03/25/2026
+   S.No  Commodity        Weight    Quantity
+   1     Rolled Paper     43000     14
+
+Rate Breakdown
+Line Haul              1500.00 USD
+Fuel Surcharge          300.00 USD
+Total                  1900.00 USD

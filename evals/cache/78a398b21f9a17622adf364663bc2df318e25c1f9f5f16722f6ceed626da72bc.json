@@ -1,0 +1,8 @@
+{
+  "content": "{\"document_type\": \"rate_confirmation\", \"load_id_text\": \"ML-884390\", \"commodity_text\": \"Steel Coil\", \"weight_text\": \"21000\", \"equipment_text\": \"Flatbed\", \"rate_con_date_text\": \"12-Mar-2026\", \"header_pickup_date_text\": \"20-Mar-2026\", \"stated_total_text\": \"3900.00 USD\", \"stops\": [{\"sequence\": 1, \"kind\": \"pickup\", \"address_text\": \"Gulf Steel Supply 8800 Clinton Dr, Houston, TX, USA\", \"city_text\": \"Houston\", \"state_text\": \"TX\", \"zip_text\": null, \"date_text\": \"03/17/2026\"}, {\"sequence\": 2, \"kind\": \"pickup\", \"address_text\": \"Ozark Fabrication 1250 S Industrial Dr, Springfield, MO 65802, USA\", \"city_text\": \"Springfield\", \"state_text\": \"MO\", \"zip_text\": \"65802\", \"date_text\": \"03/20/2026\"}, {\"sequence\": 3, \"kind\": \"delivery\", \"address_text\": \"Cascade Structural Yard 4700 E Marginal Way S, Seattle, WA, USA\", \"city_text\": \"Seattle\", \"state_text\": \"WA\", \"zip_text\": null, \"date_text\": \"03/25/2026\"}], \"charges\": [{\"label_text\": \"Base Carrier Rate\", \"amount_text\": \"3400.00 USD\"}, {\"label_text\": \"Carrier Charge\", \"amount_text\": \"500.00 USD\"}, {\"label_text\": \"Total\", \"amount_text\": \"3900.00 USD\"}]}",
+  "finish_reason": "tool_calls",
+  "meta": {
+    "recorded": "authored",
+    "model": "openai/gpt-5-nano"
+  }
+}

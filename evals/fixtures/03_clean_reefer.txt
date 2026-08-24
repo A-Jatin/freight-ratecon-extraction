@@ -1,0 +1,38 @@
+MERIDIAN LOGISTICS GROUP LLC
+CARRIER RATE & LOAD CONFIRMATION
+
+Reference ID        ML-884455
+Rate Con Date       12-Mar-2026
+Pickup Date         19-Mar-2026
+
+Carrier Details
+CARRIER                     MC #        EQUIPMENT           AGREED AMOUNT   SIZE
+NORTHSTAR COLD CHAIN LLC    MC0912844   Temp Control 34F    $2,875.00 USD   53
+
+Stops
+1  Pickup
+   Valley Fresh Packing
+   901 Airport Blvd, Salinas,
+   CA 93901, USA
+   Load Type        FTL
+   Appt Type        appointment
+   Shipping Date & Time   03/19/2026
+   S.No  Commodity        Weight     Quantity
+   1     Lettuce          41200 lbs  24
+
+2  Drop
+   Rocky Mountain Produce
+   5600 Washington St, Denver,
+   CO 80216, USA
+   Load Type        FTL
+   Appt Type        appointment
+   Delivery Date & Time   03/21/2026
+   S.No  Commodity        Weight     Quantity
+   1     Lettuce          41200 lbs  24
+
+Rate Breakdown
+Line Haul              2875.00 USD
+Total                  2875.00 USD
+
+Carrier Instructions (Sample)
+Continuous reefer, 34F. Download temp recorder at delivery.

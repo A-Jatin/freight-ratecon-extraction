@@ -1,0 +1,8 @@
+{
+  "content": "{\"document_type\": \"rate_confirmation\", \"load_id_text\": \"ML-884700\", \"commodity_text\": \"Bottled Water\", \"weight_text\": \"44000\", \"equipment_text\": \"Dry Van\", \"rate_con_date_text\": \"12-Mar-2026\", \"header_pickup_date_text\": \"24-Mar-2026\", \"stated_total_text\": \"1800.00 USD\", \"stops\": [{\"sequence\": 1, \"kind\": \"pickup\", \"address_text\": \"Lone Star Beverage 1500 Fulton St, San Antonio, TX 78201, USA\", \"city_text\": \"San Antonio\", \"state_text\": \"TX\", \"zip_text\": \"78201\", \"date_text\": \"03/24/2026\"}, {\"sequence\": 2, \"kind\": \"delivery\", \"address_text\": \"Delta Foods Depot 3300 Airline Dr, Metairie, LA 70001, USA\", \"city_text\": \"Metairie\", \"state_text\": \"LA\", \"zip_text\": \"70001\", \"date_text\": \"03/26/2026\"}], \"charges\": [{\"label_text\": \"Line Haul\", \"amount_text\": \"1500.00 USD\"}, {\"label_text\": \"Fuel Surcharge\", \"amount_text\": \"300.00 USD\"}, {\"label_text\": \"Total\", \"amount_text\": \"1800.00 USD\"}]}",
+  "finish_reason": "tool_calls",
+  "meta": {
+    "recorded": "authored",
+    "model": "openai/gpt-5-nano"
+  }
+}
