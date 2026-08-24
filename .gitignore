@@ -1,5 +1,7 @@
-# The provided sample documents are the client's material and never enter git.
-samples/provided/
+# The source PDFs stay out; their extracted text is committed under
+# evals/provided/ so the run against them is reproducible and tested.
+samples/
+*.pdf
 
 .venv/
 __pycache__/

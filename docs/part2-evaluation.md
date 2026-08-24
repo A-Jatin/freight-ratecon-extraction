@@ -6,26 +6,29 @@ rate cons at under 0.5% wrong-rate." The binding constraint is precision on `tot
 that slice*; coverage is what we maximise subject to it. One blended accuracy number throws away the
 `confidence` field we just built.
 
-**The eval set.** ~50 documents, stratified on three axes rather than one: source, *shipper template*
-(5–8 layouts — failures are per-customer, not global), and edge case, ≥3 per tag. Double-annotated
-and adjudicated. In production the labels are free: the load **as finally booked** is the answer key.
+**The eval set.** ~50 documents to start — enough to catch large regressions and per-field failure
+modes, and **nowhere near enough to certify the 0.5% budget above**, which needs closer to a
+thousand. Those are two different instruments and the plan needs both: 50 as the pre-merge gate from
+day one, growing toward a thousand out of production corrections before anyone is allowed to quote a
+wrong-rate number. At n=50 a 90% pass rate carries a 95% interval of roughly ±8pp on the normal
+approximation (±14pp near 50%, and the exact interval is asymmetric — 45/50 is [78.2%, 96.7%]), so it
+can tell 90% from 60% and cannot tell 99.5% from 98%.
 
-Size it honestly. At n=50 a 90% pass rate carries a 95% interval of roughly ±8pp (±12pp near 50%) —
-enough to catch large regressions and per-field failure modes, nowhere near enough to certify the
-0.5% budget above, which needs closer to a thousand documents. Keep the adversarial slice and a
-naturally-sampled slice separate; the adversarial set covers failure modes, so its aggregate
-accuracy estimates nothing. Score `MISSED` (null) and `WRONG` (bad value) separately — two orders of
-magnitude apart in cost, and plain F1 collapses them — and never fuzzy-match money, dates or IDs.
+Stratify on three axes: source, *shipper template* (5–8 layouts — failures are per-customer, not
+global), and edge case, ≥3 per tag. Double-annotated and adjudicated. In production the labels are
+free: the load **as finally booked** is the answer key. Keep the adversarial and naturally-sampled
+slices separate — the adversarial set covers failure modes, so its aggregate accuracy estimates
+nothing. Score `MISSED` (null) and `WRONG` (bad value) separately: two orders of magnitude apart in
+cost, and plain F1 collapses them. Never fuzzy-match money, dates or IDs.
 
 **What an error costs depends on its sign.** The usual decomposition is `P(silent) × margin loss +
 P(disputed) × rework + P(service failure) × account damage`, and what gets missed is that
-**`P(silent)` is not a scalar**: an extraction that *overpays* the carrier is absorbed in silence,
-while the same error *underpaying* them produces a phone call within a day. The policy should be
-sign-aware. Detection lag compounds it: caught at dispatch the exposure is about a TONU ($150–350);
-caught at settlement 30–45 days later the customer is already invoiced and the margin recognised, so
-the fix is a credit memo and a rebill. Plausibly $50–800 — and the operating point is insensitive
-across that whole range, because the confidence distribution is bimodal. The asymmetry establishes
-the *direction*, not a cut point.
+**`P(silent)` is not a scalar**: overpaying the carrier is absorbed in silence, while the same error
+underpaying them produces a phone call within a day. The policy should be sign-aware. Detection lag
+compounds it — caught at dispatch the exposure is a TONU ($150–350); caught at settlement 30–45 days
+later the customer is invoiced and the margin recognised, so the fix is a credit memo and a rebill.
+Plausibly $50–800, and the operating point is insensitive across that range because the confidence
+distribution is bimodal. The asymmetry establishes the *direction*, not a cut point.
 
 **Drift, without labels.** Watch proxies, and slice every one by **(template × field)** — a global
 metric hides exactly the case we care about, since one new shipper at 3% of volume running at 60%
@@ -41,8 +44,21 @@ under-reports the confidently-wrong case — precisely the case the cost asymmet
 Monitoring that blind spot needs a deliberate 1–2% audit sample of the *high*-confidence tier.
 Without it, the healthiest-looking metric is the one measuring nothing.
 
-The envelope carries `policy_version` for the same reason: change a rule and historical rows stop
-being comparable, so without it the monitoring quietly lies.
+All of this needs a substrate, so `ratecon --log run.jsonl` writes one JSON envelope per document:
+`status`, `confidence`, per-field `field_status`, the finding codes with their severities, the
+document hash, and `prompt_version` / `schema_version` / `policy_version`. Deliberately the envelope
+and not the data — it can be shipped to a dashboard without carrying document text. Three of the five signals above are a `GROUP BY` over that file as it stands; override rate
+needs the reviewer's correction written back, and the template axis needs a layout fingerprint —
+neither exists yet, and both are the next thing to build rather than something already shipped. `policy_version` is on it for the same reason: change a rule
+and historical rows stop being comparable, so without it the monitoring quietly lies.
+
+**The unit economics are not the constraint, and it is worth saying so.** Recording the corpus
+against `openai/gpt-5.6-luna` cost $0.0072 for 13 documents — about **$0.55 per 1,000 rate
+confirmations**. Against a per-load margin measured in tens or hundreds of dollars, inference cost
+does not enter the decision: the operating point is set entirely by the cost of a wrong rate versus
+the cost of a human review, which is why every number above is about error rates and review load
+rather than tokens. It also means a shadow deployment of a candidate model is effectively free, and
+that is the cheapest drift control available.
 
 **Where the human goes.** A broker's TMS *generates* broker→carrier rate cons; it doesn't parse
 them. What arrives is co-brokered freight, customer tenders, and carrier invoices at settlement, and

@@ -17,6 +17,15 @@ to say out loud is answering the wrong question. The decision is the *(carrier, 
 covers before the deadline at least cost. Hours-to-pickup matters too: the carrier who books three
 days out is a different population from the 6am day-of market.
 
+The obvious objection is that this looks circular — the offered rate is the thing we are choosing,
+so how can it be an input? It is not circular, it is an inner loop. At scoring time we sweep a small
+rate grid per candidate (the DAT/Truckstop band for the lane, say seven points from the 25th to the
+90th percentile), score each *(carrier, rate)* cell, and rank cells by expected value:
+`p(books | carrier, rate, hours) × (target_rate − rate)`. The panel then shows five carriers with
+the rate to open at, which is the artefact a broker actually wants — "call Dependable at $2,450" is
+a usable instruction and "Dependable: 0.71" is not. Scoring 200 candidates × 7 rate points is 1,400
+GBDT rows, which is still under 5ms.
+
 **The selection bias cannot be reweighted away.** We only observe outcomes for carriers a human
 contacted — i.e. the ones we showed. Exposure propensity is exactly *zero* for everyone else, so
 IPW has nothing to divide by. The fixes are structural: a stochastic logging policy and an explicit
@@ -41,8 +50,9 @@ Broker posts a load
  │
  ├─ 3. FEATURES                                   [feature store, p99 ~15ms]
  │
- ├─ 4. SCORE  LightGBM → P(books | rate), isotonic-calibrated  [~2ms/500 rows]
- │     second head → expected accept rate;  rank = p x (target - expected)
+ ├─ 4. SCORE  LightGBM → P(books | carrier, rate, hours), isotonic-calibrated
+ │     swept over a 7-point rate grid per candidate   [~5ms / 1,400 rows]
+ │     rank cells by  p x (target_rate - offered_rate)
  │
  └─ 5. PRESENT  4 exploit + 1 explore, propensity logged
        each with a reason string, a suggested rate band, and one-click
@@ -73,6 +83,14 @@ Plus ~20 more: lane recency and frequency, acceptance rate, tracking-compliance 
 for refusing Macropoint/P44, and it correlates with fraud), on-time percentage, claims, power units,
 capability flags (hazmat, TWIC, food-grade, tarps), QuickBooks payment history, dispatcher
 answer-rate by hour.
+
+The four integrations named in the brief land in different places, and it is worth being explicit
+about which is doing what. **DAT and Truckstop** supply the *rate band* the grid is swept over and
+the *inbound-contact* signal on a posting — the strongest real-time capacity feature we have — and
+Truckstop's carrier monitoring is a second identity source that disagrees with Highway often enough
+to be worth reconciling rather than deduplicating. **Highway** is the identity gate in step 1, never
+a feature. **QuickBooks** contributes days-to-pay and dispute history: a carrier who has been paid
+fast twice answers the phone, and one sitting on a 60-day invoice does not.
 
 Two I would *not* headline: DAT truck posts (stale, duplicated, posted by dispatch services on
 behalf of many MCs so they rarely join back to a carrier record, and per-seat licensed), and

@@ -3,20 +3,69 @@
 Extracts a validated, typed load record from the raw text of a freight rate confirmation, with a
 per-field confidence signal and explicit routing to human review.
 
-**The idea the rest of this follows from:**
+> The model selects spans. Python does interpretation, arithmetic, normalisation, and trust.
 
-> The model does span selection and light typing. Python does interpretation, arithmetic,
-> normalisation, and trust.
+The model is never asked for a date, a number, or a field called `line_haul_rate`. It returns
+verbatim substrings, so it cannot silently resolve `3/4/26`, decide that a charge labelled "Carrier
+Charge" is a fuel surcharge, or overwrite a printed total. Those decisions are made in plain Python
+that can be printed, unit-tested and changed without touching a prompt. What the model *does* still
+decide is listed in [docs/design-notes.md](docs/design-notes.md#what-the-model-still-owns) — a short
+list, but the most expensive error in the system is on it.
 
-The model is never shown a date type, a number type, or the words *line haul*. It returns verbatim
-substrings and nothing else, so it is structurally unable to silently resolve `3/4/26`, decide that
-a charge labelled "Carrier Charge" is a fuel surcharge, or quietly overwrite a printed total. Every
-one of those decisions is made in plain Python that can be printed, unit-tested, and changed
-without touching a prompt.
+| Deliverable | Where |
+|---|---|
+| **Part 1** — the pipeline | `src/ratecon/`, run it with `uv run ratecon demo` |
+| **Part 1.3** — *when to auto-populate vs. flag for review* | [below](#when-a-load-auto-populates-and-when-it-goes-to-a-human) |
+| **Part 1.4** — missing fields, conflicting totals, ambiguous dates | fixtures 08, 05, 04 in the transcript below |
+| **Part 2** — evaluation and reliability | [`docs/part2-evaluation.md`](docs/part2-evaluation.md) |
+| **Part 3** — Carrier Match design | [`docs/part3-carrier-match.md`](docs/part3-carrier-match.md) |
+| Why the code is shaped this way | [`docs/design-notes.md`](docs/design-notes.md) |
 
-## Real output
+## Quickstart
 
-A three-stop load with an unclassifiable charge line, straight from `ratecon extract`:
+```bash
+uv sync
+uv run ratecon demo                  # every fixture, offline, no API key
+uv run pytest                        # 206 tests, all offline
+uv run ratecon --log run.jsonl demo  # one JSON envelope per document, for monitoring
+```
+
+```
+01_clean_single_pickup         high    Cleveland -> Charlotte  2026-03-16  total=2150.00
+                               findings: none  [response: provider]
+02_multi_stop_unmapped_charge  medium  Houston -> Seattle  2026-03-17  total=3900.00  confirm: commodity, destination, origin, pickup_date, total_rate, weight_lbs
+                               findings: MULTI_COMMODITY, MULTI_STOP, ORIGIN_DATE_DISAGREEMENT, UNMAPPED_CHARGE  [response: provider]
+03_clean_reefer                high    Salinas -> Denver  2026-03-19  total=2875.00
+                               findings: none  [response: provider]
+04_ambiguous_date              low     Allentown -> Newark  2026-03-04  total=1480.00  confirm: delivery_date, pickup_date
+                               findings: DATE_UNRESOLVED  [response: provider]
+05_unexplained_residual        medium  Green Bay -> Kansas City  2026-03-23  total=1900.00  confirm: fuel_surcharge, line_haul_rate, total_rate
+                               findings: CHARGES_DONT_RECONCILE  [response: provider]
+06_fuel_surcharge_reconciles   high    San Antonio -> Metairie  2026-03-24  total=1800.00
+                               findings: none  [response: provider]
+07_bill_of_lading              low     Cleveland -> Charlotte  2026-03-16  total=None  confirm: delivery_date, destination, origin, pickup_date, total_rate
+                               findings: NOT_A_RATE_CON  [response: provider]
+08_missing_total_and_delivery_date low     Davenport -> Sioux Falls  2026-03-27  total=None  confirm: delivery_date, total_rate, weight_lbs
+                               findings: CRITICAL_FIELD_UNUSABLE, DATE_UNPARSEABLE, WEIGHT_IMPLAUSIBLE  [response: provider]
+09_customer_rate_step_deck     low     Pittsburgh -> Omaha  2026-03-29  total=2150.00  confirm: equipment_type, total_rate
+                               findings: EQUIPMENT_UNMAPPED, MULTIPLE_TOTALS  [response: provider]
+10_transposed_dates            low     Dayton -> Lexington  2026-03-30  total=1325.00  confirm: delivery_date, pickup_date
+                               findings: DATE_ORDER_INVALID  [response: provider]
+11_model_misreads_the_lane     low     Greenville -> Baltimore  2026-04-14  total=2780.00  confirm: delivery_date, destination, load_id, origin, pickup_date
+                               findings: NOT_GROUNDED, ORIGIN_DATE_DISAGREEMENT, STOP_COUNT_MISMATCH  [response: authored]
+```
+
+`[response: provider]` means that row is a **real recorded response** from `openai/gpt-5.6-luna`,
+replayed from the committed cache — not something I wrote. Row 11 is the one exception, and is
+deliberately wrong; see [On the offline cache](docs/design-notes.md#on-the-offline-cache).
+
+Row 07 is worth a second look: a rejected document still publishes a lane and a pickup date with
+every gating field marked `blocked`. That is deliberate — see *do not refuse to create the load* in
+the Part 2 write-up.
+
+## The published record
+
+`ratecon extract`, on fixture 02 (`meta` elided):
 
 ```json
 {
@@ -24,82 +73,109 @@ A three-stop load with an unclassifiable charge line, straight from `ratecon ext
     "load_id": "ML-884390",
     "origin":      { "city": "Houston", "state": "TX", "zip": null },
     "destination": { "city": "Seattle", "state": "WA", "zip": null },
-    "pickup_date": "2026-03-17",
-    "delivery_date": "2026-03-25",
+    "pickup_date": "2026-03-17", "delivery_date": "2026-03-25",
     "equipment_type": "flatbed",
-    "line_haul_rate": 3400.0,
-    "fuel_surcharge": null,
-    "total_rate": 3900.0,
-    "weight_lbs": 21000.0,
-    "commodity": "Steel Coil",
+    "line_haul_rate": 3400.0, "fuel_surcharge": null, "total_rate": 3900.0,
+    "weight_lbs": 21000.0, "commodity": "Steel Coil",
     "confidence": "medium"
   },
   "field_status": {
-    "total_rate": "flagged", "origin": "flagged",
-    "destination": "flagged", "pickup_date": "flagged"
+    "load_id": "ok", "origin": "flagged", "destination": "flagged",
+    "pickup_date": "flagged", "delivery_date": "ok", "equipment_type": "ok",
+    "line_haul_rate": "ok", "fuel_surcharge": "ok", "total_rate": "flagged",
+    "weight_lbs": "flagged", "commodity": "flagged"
   },
   "findings": [
     { "code": "UNMAPPED_CHARGE", "severity": "flag", "fields": ["total_rate"],
       "message": "Unclassified charge line(s): Carrier Charge 500.00. Not mapped to fuel — no fuel label present." },
     { "code": "MULTI_STOP", "severity": "flag", "fields": ["origin", "destination"],
       "message": "3 stops collapsed into one origin/destination pair." },
+    { "code": "MULTI_COMMODITY", "severity": "flag", "fields": ["commodity", "weight_lbs"],
+      "message": "2 distinct commodities printed; published the first ('Steel Coil') and its weight only." },
     { "code": "ORIGIN_DATE_DISAGREEMENT", "severity": "flag", "fields": ["pickup_date"],
       "message": "Header pickup date 2026-03-20 belongs to a different stop; published 2026-03-17 from the first pickup." }
   ],
-  "confidence": "medium",
-  "status": "ok"
+  "confidence": "medium", "status": "ok"
 }
 ```
 
-`fuel_surcharge` is `null` and $500 sits outside the three-slot schema — because the document says
-"Carrier Charge", which is not a fuel line. The arithmetic still closes (3400 + 500 = 3900), so the
-total is trustworthy and this is advisory rather than fatal.
+`fuel_surcharge` is `null` and $500 sits outside the three-slot schema, because the document says
+"Carrier Charge", which is not a fuel line. The arithmetic still closes, so the total is trustworthy
+and this is advisory rather than fatal. `field_status` names every published field including the
+clean ones — a consumer has to tell "checked, fine" from "no rule looked".
 
-## Quickstart
+## On the three provided samples
+
+`evals/provided/` holds the three rate confirmations supplied with the exercise, converted to text
+with `pdftotext -layout` — not byte-identical to what `pdf.py` emits, but the same kind of artefact:
+layout-preserved text with the table columns still interleaved.
 
 ```bash
-uv sync
-uv run ratecon demo        # every fixture, offline, no API key
-uv run pytest              # 91 tests, all offline
+uv run ratecon extract evals/provided/sampleB_LD64408.txt --offline
 ```
 
-```
-01_clean_single_pickup        high    Cleveland -> Charlotte    2026-03-16  total=2150.00
-02_multi_stop_unmapped_charge medium  Houston -> Seattle        2026-03-17  total=3900.00
-                              confirm: destination, origin, pickup_date, total_rate
-03_clean_reefer               high    Salinas -> Denver         2026-03-19  total=2875.00
-04_ambiguous_date             low     Allentown -> Newark       2026-03-04  total=1480.00
-                              confirm: delivery_date, pickup_date
-05_unexplained_residual       medium  Green Bay -> Kansas City  2026-03-23  total=1900.00
-                              confirm: fuel_surcharge, line_haul_rate, total_rate
-06_fuel_surcharge_reconciles  high    San Antonio -> Metairie   2026-03-24  total=1800.00
-07_bill_of_lading             low     — NOT_A_RATE_CON
-```
+`tests/test_provided_samples.py` runs all three on every CI run and asserts the published values
+against **what `openai/gpt-5.6-luna` actually returned** — recorded responses, replayed offline. The
+test refuses to pass on an authored one.
 
-## How it works
+| | lane | pickup | delivery | total | conf | findings |
+|---|---|---|---|---|---|---|
+| **A** `LD64392` | Chicago IL → New York NY | 2026-07-30 | 2026-08-01 | 50.00 | high | `WEIGHT_IMPLAUSIBLE` |
+| **B** `LD64408` | Miami FL → San Jose CA | 2026-07-28 | 2026-08-05 | 700.00 | medium | `MULTI_STOP`, `MULTI_COMMODITY`, `UNMAPPED_CHARGE`, `ORIGIN_DATE_DISAGREEMENT` |
+| **C** `LD64407` | Chicago IL → New York NY | 2026-07-31 | 2026-08-02 | 50.00 | high | `WEIGHT_IMPLAUSIBLE` |
 
-```mermaid
-flowchart LR
-    A["raw text"] --> B["LLM: verbatim spans only"]
-    B --> C["validate + 1 repair retry"]
-    C --> D["assemble: dates, money, stops, charges"]
-    D --> E["audit: 12 field-scoped rules"]
-    E --> F["route: high / medium / low"]
-```
+Four cells in that table are the design working:
 
-| Module | Does |
+- **A's delivery date.** `08/01/2026` cannot be read alone. The sibling `07/30/2026` has a 30, so
+  the document is MDY, and only that inference makes it 1 August rather than 8 January. Four of the
+  seven stop dates across the three samples are locally ambiguous.
+- **B's lane and pickup date.** Two pickups, one drop. The lane is first-pickup to last-drop in
+  printed order, and the pickup date is *that stop's own* — not the header's `03-Aug-2026`, which
+  belongs to the Chicago pickup. Pairing Miami with 03-Aug dispatches a truck 1,200 miles wrong.
+- **B's $200.** `Base Carrier Rate` is line haul; `Carrier Charge` is not. They share the token
+  *Carrier*, and a substring match maps both to line haul, drives the residual to zero and scores
+  the one interesting sample as clean.
+- **`WEIGHT_IMPLAUSIBLE` on A and C** is correct, not noise: 182 lb and 422 lb on an FTL flatbed are
+  artefacts of a test document. It lands on `weight_lbs`, which is not gating, so it says so without
+  holding up the load.
+
+The model was more faithful than my authored guess in two places, which is the argument for
+recording rather than authoring. On sample B it returned all **four** commodity rows where I had
+written two, and it returned `weight_text: "-"` because that is literally what the Weight column
+prints — which surfaced a real bug: `WEIGHT_UNREADABLE` was firing on the document's own null
+marker, treating a correct read as a refusal. On fixture 08 it returned
+`"TBD - dispatch will advise"` verbatim where I had written `null`, so the finding is
+`DATE_UNPARSEABLE` rather than `DATE_MISSING` — a better answer than mine, and the reason those two
+codes are separate.
+
+**Cost, measured rather than estimated:** 13 documents, 14,892 input and 3,522 output tokens,
+**$0.0072** — about **$0.55 per 1,000 rate confirmations** at `gpt-5.6-luna` list price. That is the
+number to put next to a broker's per-load margin, and it is small enough that model choice here is a
+question about accuracy, not about spend.
+
+## When a load auto-populates, and when it goes to a human
+
+The brief asks the README for this specifically, so here is the whole answer in one line: **`high`
+auto-populates, `medium` auto-populates but holds the money, `low` goes to the review queue.** No
+tier refuses to create the load.
+
+| tier | what the consumer does |
 |---|---|
-| `schema.py` | `LlmExtraction` (wire) and `RateConfirmation` (the published contract), plus wire-schema shaping |
-| `extract.py` | `LLMClient` protocol, OpenRouter client, cache, bounded repair retry, `FakeClient` |
-| `normalize.py` | date resolver, `Decimal` money, stop selection, charge classifier, equipment map |
-| `rules.py` | the 12 rules, each a pure function |
-| `pipeline.py` | assembly, the routing ladder, the total-function boundary |
+| **high** | Auto-populate the load. No human touches it. |
+| **medium** | Auto-populate, mark the flagged fields, and **block the money event** — carrier tender and payment — until a reviewer confirms them. The load exists; only the payable is held. |
+| **low** | Auto-populate, mark everything, and route the document to the review queue before anything downstream fires. |
 
-### Confidence is a decision, not a score
+Refusing to create the load on low confidence is the obvious design and it is wrong: a broker with a
+truck waiting will key it manually, and the workflow is lost permanently. Holding the *money* rather
+than the *record* buys the same protection at a fraction of the friction. That policy belongs to the
+consuming system; this repo emits the tier and the per-field `field_status` that make it enforceable.
+`docs/part2-evaluation.md` argues the case at length.
 
-Each finding names the field it impugns and is either **BLOCK** (that field is unusable) or
-**FLAG** (usable, confirm it). Gating fields are `total_rate`, `pickup_date`, `delivery_date`,
-`origin`, `destination`.
+### How the tier is decided
+
+Each finding names the field it impugns and is either **BLOCK** (that field is unusable) or **FLAG**
+(usable, confirm it). Five fields gate: `total_rate`, `pickup_date`, `delivery_date`, `origin`,
+`destination` — the ones that make a booking wrong in a way that costs money on the day.
 
 ```
 BLOCK on a gating field      → low
@@ -108,147 +184,87 @@ FLAG  on a gating field      → medium
 otherwise                    → high
 ```
 
-Three tiers because a consumer has exactly three behaviours: use it, confirm the marked fields, or
-look at the whole thing. There are no counting thresholds to defend — no "two majors makes a
-minor" — because every rule has to justify itself by naming a field, which is a better forcing
-function on rule design than a tally.
+Three tiers because a consumer has exactly three behaviours. There are no counting thresholds to
+defend — no "two majors make a minor" — because every rule has to justify itself by naming a field,
+which is a better forcing function on rule design than a tally. **A BLOCK never erases the value**:
+it marks the field and leaves the data in place, so a disagreement in one field cannot destroy
+another field's good value.
 
-**A BLOCK never erases the value.** It marks the field and leaves the data in place, so a
-disagreement in one field can never destroy another field's good value.
+**Why not a continuous score?** The right object is `P(field correct | finding set)`, fit by logistic
+regression on the finding indicators using broker corrections as labels. I don't have those labels,
+so I shipped the rules that make the decision and the `--log` output that would produce them.
 
-**Why not a continuous score?** The tier is a *decision*, not a probability. The right object is
-`P(field correct | finding set)`, fit by logistic regression on the finding indicators using broker
-corrections as labels. I don't have those labels, so I shipped the rules that make the decision and
-the logging that would produce them. The rule set is the prior; corrections replace it inside a
-month.
+**Why not model-derived confidence?** Anthropic exposes no logprobs, and on OpenRouter support is
+per-endpoint. Under constrained decoding the distribution is renormalised over grammar-legal tokens,
+so an enum reads ~0.99 because only four tokens were ever legal — that is the grammar's confidence,
+not the model's, and it is weakest on the free-text spans that matter. Verbalised confidence is the
+vibes the brief asks us not to ship, and self-consistency doesn't rescue it: models sharing
+pretraining fail the *same way* on the same ambiguous span.
 
-**Why not model-derived confidence?** Three independent reasons. Anthropic exposes no logprobs at
-all, and on OpenRouter support is per-endpoint and shifts when routing shifts. Under constrained
-decoding the token distribution is renormalised over grammar-legal tokens, so an enum field reads
-~0.99 because only four tokens were ever legal — that is the grammar's confidence, not the model's,
-and it is weakest precisely on the free-text spans we care about. And verbalised confidence
-("rate yourself 1–10") is the vibes the brief asks us not to ship. Self-consistency doesn't rescue
-it either: models sharing pretraining tend to fail the *same way* on the same ambiguous span, so
-agreement is not correctness.
+## How it works
 
-## The judgment calls
+```mermaid
+flowchart LR
+    A["raw text"] --> B["LLM: verbatim spans only"]
+    B --> C["validate + 1 repair retry"]
+    C --> D["assemble: dates, money, stops, charges"]
+    D --> E["audit: 15 field-scoped rules"]
+    E --> F["route: high / medium / low"]
+```
 
-**Dates are resolved from the document, never by the model.** The model returns `"07/30/2026"`
-verbatim. Python then infers the document's date order from tokens that can only be read one way —
-`07/30/2026` has a 30, so the document is MDY — and applies that to its siblings. In the provided
-samples four of seven stop dates are locally ambiguous and only this inference settles them. When
-nothing settles it, the likelier reading is published *with the alternative attached and the field
-flagged*: nulling it destroys what the reviewer needs, and guessing silently is how a truck arrives
-a month late. `python-dateutil` is deliberately not a dependency — it silently picks a reading and
-returns a date indistinguishable from a confident one, which is the exact signal this pipeline
-exists to surface.
+| Module | Does |
+|---|---|
+| `schema.py` | `LlmExtraction` (wire) and `RateConfirmation` (the published contract), plus wire-schema shaping |
+| `extract.py` | `LLMClient` protocol, OpenRouter client, cache, bounded repair retry, `FakeClient` |
+| `normalize.py` | date resolver, `Decimal` money, stop selection, charge classifier, equipment map |
+| `rules.py` | the 15 rules, each a pure function |
+| `pipeline.py` | assembly, the routing ladder, the total-function boundary |
 
-**`fuel_surcharge` is never imputed.** Only a line explicitly labelled fuel/FSC/F-S fills it, and
-it is never derived as `total − line_haul` — that is the same hallucination performed with a
-calculator, and it would always reconcile. A null fuel surcharge is the *modal* outcome on spot
-broker→carrier rate confirmations, which are quoted all-in; separate FSC lines are characteristic
-of contract freight.
+### Precision and recall are different checks
 
-**Charge labels are matched with anchored patterns, never substrings.** "Base Carrier Rate" and
-"Carrier Charge" share the token *Carrier*; a naive `"carrier" in label` maps both to line haul,
-drives the residual to zero, and scores the one genuinely interesting document as clean. A deny-list
-runs first, because "Fuel Advance" is a negative deduction, not a surcharge.
+Most of `rules.py` asks *is this value printed on the document?* That is precision, and alone it is
+not enough, because omission is invisible to it — and the asymmetry is vicious. Dropping a stop also
+drops the findings that would have flagged the lane:
 
-**`line_haul + fuel ≠ total` is usually correct.** Detention, lumper, layover, TONU and stop-off are
-separate lines, so a naive "totals must reconcile" rule would flag a large share of real freight.
-Only an *unexplained* residual is a finding, and the block lands on the decomposition, not on the
-printed total — the total is the contractual figure the carrier is paid, and the likeliest cause of
-a residual is a charge line we failed to read. Once the unexplained part exceeds everything we could
-identify, the total stops being corroborated and is blocked too.
+```
+before STOP_COUNT_MISMATCH existed:
+  FAITHFUL (3 stops)   medium  Houston -> Seattle      pickup=2026-03-17  MULTI_STOP, ORIGIN_DATE_DISAGREEMENT
+  MODEL DROPS stop 1   high    Springfield -> Seattle  pickup=2026-03-20  (no findings)
+```
 
-**Stop order follows the printed sequence, not the dates.** Stops are printed in routed order
-because that is the order the driver executes them; the per-stop dates are hand-entered and are what
-gets fat-fingered. Sorting by date would let one typo silently reorder the route. Dates cross-check
-only. And `pickup_date` comes from the stop selected as the origin, never from the header — on a
-multi-pickup load the header names the primary pickup, and pairing that date with the first stop's
-city dispatches a truck a thousand miles from where it should be.
+Wrong origin, wrong date, top tier, nothing marked. `STOP_COUNT_MISMATCH` counts numbered stop rows
+in the source and blocks when the model returned fewer, so the truncated reading now lands at `low`.
 
-**Equipment is matched longest-token-first.** "Cargo Van" must not become `van`: in FTL, *van* means
-a 53' dry van trailer, while a cargo van is a sub-26,000-GVW vehicle needing no CDL. Step Deck is
-open-deck but not substitutable for a flatbed — the deck height differs and the load will not
-transfer — so it lands in `other` and is flagged rather than coerced.
+Every part of that counting is biased toward under-counting, and each bias was a false BLOCK on the
+whole gating set before it was added: a leading row number is required, so the "Shipper
+Instructions" heading is not a stop; lines carrying an amount are dropped, so
+`2  Stop Off Charge  $100.00` is not a third stop; and it counts *distinct* row numbers, so a TMS
+numbering stops 10/20/30 is a scheme rather than thirty stops. The bias is deliberate — a missed
+omission costs one undetected error, a false BLOCK costs a human review on every clean document of
+that template — and it means an unnumbered layout still lets a dropped stop through.
 
-**Grounding is honest about what it catches.** Every published value that comes from a single span
-is checked against the source, with token boundaries and per-type comparators (bare substring
-matching passes `50.00` inside `$1,450.00`, and two-letter state codes match inside ordinary words).
-This is strong against a hallucinated value and **weak against the error that actually costs money**
-— reading the customer rate instead of the carrier rate, where the wrong number is also verbatim in
-the document. `MULTIPLE_TOTALS` exists for that case.
+## Where the reasoning lives
 
-**Prompt injection is handled structurally, not with a keyword detector.** Rate confirmations arrive
-by email from counterparties, into a system that creates money events. But real rate cons are
-wall-to-wall imperatives — *"Do not break seal"*, *"Driver must call dispatch"* — so an
-instruction-detector would reject most production volume. The defence is that an injected total
-still has to survive arithmetic reconciliation and grounding. There is a test for exactly that.
-
-**`status` is separate from `confidence`.** A 429, a refusal, a truncation or a cache miss produces
-`status: failed` with a reason, never `confidence: low`. Collapsing them would encode "we read the
-document and found nothing", which is false — and it would make a provider outage look exactly like
-model drift on a dashboard.
-
-## On the offline cache
-
-`ratecon demo` reads committed responses so it runs with no key and no network. **Those responses
-are authored, not recorded** — every entry is stamped `meta.recorded = "authored"`, and
-`evals/author_offline_cache.py` says so at the top. They exist so the deterministic half of the
-pipeline — which is the part being demonstrated — can be run and inspected by anyone who clones
-this. They are not evidence about the model. Running `ratecon record` with an `OPENROUTER_API_KEY`
-overwrites them with real provider responses.
-
-## On evaluation
-
-The repo ships a per-fixture findings table, not an accuracy number. Bounding the high tier's error
-rate at 1% needs roughly 300 documents; at n=7 a coverage curve would be theatre. What the fixtures
-demonstrate is that each rule fires on the document it was written for and stays quiet elsewhere.
-
-`docs/part2-evaluation.md` covers what a real eval set and production monitoring look like, and
-`docs/part3-carrier-match.md` is the Carrier Match design.
-
-## What I deliberately did not build
-
-Each of these is a three-line design note instead of an afternoon, which is the trade the brief's
-"do not over-polish" is asking for.
-
-- **A `$/mile` plausibility band.** It needs billing miles — PC\*MILER is the industry standard and
-  is licensed; car-routing APIs are not truck-legal; zip-centroid great-circle runs 15–25% under
-  road miles. It also detects an unusual *deal*, not an extraction *error*, so it belongs in a
-  pricing anomaly monitor rather than here.
-- **Transit feasibility.** Great-circle × 1.2 against a ~600 mi/day solo bound would catch
-  transposed and wrong-year dates that survive the `pickup ≤ delivery` check. Cheap, and the one
-  place coarse mileage is good enough.
-- **ZIP↔state validation.** Every dataset option is a bad trade (10 MB of SQLite, or a runtime
-  download that kills the offline story), and it would not catch the realistic error anyway:
-  `60601` → `60610` are both valid Chicago ZIPs.
-- **Per-field calibration from corrections.** The logistic regression described above, once there
-  are labels.
-- **Template fingerprinting and embedding-based clustering** for new-shipper detection.
-- **Layout-aware table reconstruction and OCR.** `pdf.py` is the largest uncontrolled variance in
-  this system, not the smallest — naive extraction on a table-heavy document can reattach a number
-  to the wrong label. A scanned PDF currently fails loudly with `no_text_layer_likely_scanned`
-  rather than pretending to be empty.
-- **Appointment times and FCFS windows.** The schema is date-only; dispatch cannot act on a date
-  without a time, and a 23:00 pickup with a timezone creates a real off-by-one-day.
-- **Async batch processing** with a bounded semaphore and 429 backoff.
+`docs/design-notes.md` is the argument for every choice above — the date policy, the charge
+classifier, what the model still owns, the limits of grounding and of the injection defence, and
+what I deliberately did not build. `docs/part2-evaluation.md` covers evaluation and production
+monitoring; `docs/part3-carrier-match.md` is the Carrier Match design.
 
 ## Notes on the stack
 
-Python 3.12+, `uv`, Pydantic v2, `ruff` (which replaces black and isort — carrying all three would
-just be three configs that can disagree), `mypy --strict`, `pytest`. OpenRouter via the `openai`
-SDK's `base_url`, so the same code points at any OpenAI-compatible endpoint by changing one
-variable.
+Python 3.12+, `uv`, Pydantic v2, `ruff` (replacing black and isort), `mypy --strict`, `pytest`.
+OpenRouter via the `openai` SDK's `base_url`, pinned to `openai/gpt-5.6-luna`. `pdfplumber` rather than PyMuPDF, which is AGPL-3.0
+and auto-flagged by many corporate OSS policies. Tool calling is the only schema path, and every
+response is validated regardless — `docs/design-notes.md` says why.
 
-`pdfplumber` rather than PyMuPDF: PyMuPDF is AGPL-3.0, which is viral and auto-flagged by many
-corporate OSS policies.
+### Deviations from the brief's schema
 
-Tool calling is the schema path, with `response_format` as a per-model upgrade selected at runtime
-from the models API. Validation is not optional, and OpenRouter's own documentation is why: the
-structured-outputs page says enforcement "varies by provider … exact compliance is not guaranteed
-on every endpoint", while the provider-routing page says that if no provider supports the parameter
-"the request is still routed to that model and the parameter is ignored" — and the
-structured-outputs page separately claims such a request "will fail with an error". Two official
-pages disagree about the failure mode, so the pipeline depends on neither.
+- `origin` / `destination` are `Address | null`. The brief marks `zip` nullable but not the object,
+  and types `city` and `state` as non-null — and a document with no usable pickup has no honest
+  value for them. `{"city": "", "state": ""}` is worse than `null`, because an empty string reads
+  downstream as a real address.
+- Money is `Decimal` internally, serialised as a JSON number because the brief says `number`. A
+  string would be safer against float round-tripping; the brief wins, and it is flagged rather than
+  silently improved.
+- Everything else is the brief's contract exactly, asserted field-by-field in
+  `test_the_published_contract_is_asserted_value_by_value`.
