@@ -51,26 +51,45 @@ class Charge(BaseModel):
     amount_text: str | None
 
 
+class CommodityLine(BaseModel):
+    """One row of the commodity table, as printed.
+
+    A list rather than two scalars because the published schema has room for
+    exactly one commodity and one weight, and a load carrying three commodities
+    is a fact about the document that the contract cannot hold. Asking for the
+    scalar would make the model perform that collapse silently; asking for the
+    list lets Python collapse it and say so (`MULTI_COMMODITY`).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    description_text: str | None
+    weight_text: str | None
+
+
 class LlmExtraction(BaseModel):
     """The wire contract.
 
     Note what is *absent*: `line_haul_rate` and `fuel_surcharge`. Those are derived
     from `charges[]` by an auditable keyword policy. Asking the model for them too
     would create two sources of truth with no precedence rule.
+
+    This docstring does not reach the model: `to_wire_schema` strips every
+    `description`, so design rationale stays out of the prompt and an edit to a
+    comment cannot invalidate the response cache.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     document_type: Literal["rate_confirmation", "bol", "invoice", "other"]
     load_id_text: str | None
-    commodity_text: str | None
-    weight_text: str | None
     equipment_text: str | None
     rate_con_date_text: str | None
     header_pickup_date_text: str | None
     stated_total_text: str | None
     stops: list[Stop]
     charges: list[Charge]
+    commodities: list[CommodityLine]
 
 
 # --------------------------------------------------------------------------
@@ -177,6 +196,9 @@ class Finding(BaseModel):
 type Json = dict[str, Json] | list[Json] | str | int | float | bool | None
 
 
+_DROPPED_KEYWORDS = ("title", "default", "description")
+
+
 def to_wire_schema(model: type[BaseModel]) -> dict[str, Any]:
     """Shape `model_json_schema()` into the subset strict providers accept.
 
@@ -186,6 +208,15 @@ def to_wire_schema(model: type[BaseModel]) -> dict[str, Any]:
     `additionalProperties: false` on every object and every key listed in
     `required`, with optionality expressed as a nullable type rather than by
     omission.
+
+    `description` is dropped too, which is a deliberate policy and not just
+    tidying. Pydantic derives it from the class docstring, so without this the
+    model is sent our design rationale — `libpostal`, "two sources of truth",
+    the reason `line_haul_rate` is absent — none of which helps it copy spans,
+    and all of which is prompt surface a counterparty never sees but we pay for.
+    It also makes the response cache brittle: the cache key hashes the request,
+    so rewording one comment would invalidate every committed entry. Guidance
+    for the model belongs in the system prompt, where it can be read as prose.
     """
     raw = model.model_json_schema()
     defs = raw.pop("$defs", {})
@@ -208,10 +239,21 @@ def _inline(node: Json, defs: dict[str, Any]) -> Json:
     return node
 
 
-def _clean(node: Json) -> Json:
+def _clean(node: Json, *, in_properties: bool = False) -> Json:
+    """Strip provider-hostile keywords, then close every object.
+
+    `in_properties` exists because the keys of a `properties` mapping are field
+    *names*, not schema keywords: a model with a field called `title` would
+    otherwise have that field silently deleted from the wire schema and then
+    fail validation for a reason nothing in the payload explains.
+    """
     if isinstance(node, dict):
+        if in_properties:
+            return {k: _clean(v) for k, v in node.items()}
         out: dict[str, Json] = {
-            k: _clean(v) for k, v in node.items() if k not in ("title", "default")
+            k: _clean(v, in_properties=(k == "properties"))
+            for k, v in node.items()
+            if k not in _DROPPED_KEYWORDS
         }
         properties = out.get("properties")
         if out.get("type") == "object" and isinstance(properties, dict):
